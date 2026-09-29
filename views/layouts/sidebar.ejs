@@ -1,0 +1,157 @@
+<% 
+  const path = typeof currentPath !== 'undefined' ? currentPath : ''; 
+  const role = currentUser ? currentUser.role : '';
+%>
+
+<!-- Sidebar Overlay for Mobile -->
+<div id="sidebar-backdrop" class="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm lg:hidden hidden"></div>
+
+<!-- Sidebar Container -->
+<aside id="sidebar-menu" class="fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-white border-r border-slate-200 transition-transform duration-300 ease-in-out -translate-x-full lg:translate-x-0">
+  
+  <!-- Brand Logo -->
+  <div class="flex h-16 shrink-0 items-center justify-between px-6 border-b border-slate-100 bg-white">
+    <a href="/dashboard" class="flex items-center gap-3 group">
+      <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-brand-500/20 group-hover:scale-105 transition">
+        <i class="fa-solid fa-coins text-lg"></i>
+      </div>
+      <div>
+        <span class="text-base font-extrabold tracking-tight text-slate-900">SiKas<span class="text-brand-600">Pintar</span></span>
+        <span class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Kas Kelas &amp; Ekskul</span>
+      </div>
+    </a>
+    <button id="close-sidebar-btn" type="button" class="lg:hidden p-1.5 text-slate-400 hover:text-slate-600 rounded-lg">
+      <i class="fa-solid fa-xmark text-lg"></i>
+    </button>
+  </div>
+
+  <!-- Navigation Links -->
+  <div class="flex flex-1 flex-col overflow-y-auto px-4 py-5 gap-y-6">
+    
+    <!-- User Card Mini -->
+    <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center gap-3">
+      <div class="h-10 w-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center font-bold text-brand-600 shadow-sm">
+        <%= currentUser ? currentUser.nama.charAt(0).toUpperCase() : 'U' %>
+      </div>
+      <div class="overflow-hidden">
+        <div class="text-xs font-bold text-slate-800 truncate"><%= currentUser ? currentUser.nama : 'Guest' %></div>
+        <div class="text-[11px] text-slate-500 truncate"><%= currentUser ? (currentUser.kelas || currentUser.role) : '' %></div>
+      </div>
+    </div>
+
+    <!-- Nav List -->
+    <nav class="flex flex-1 flex-col gap-y-1">
+      <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3 mb-1">Menu Utama</div>
+
+      <!-- Dashboard (All) -->
+      <a href="/dashboard" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition <%= path === '/dashboard' ? 'bg-brand-50 text-brand-600 shadow-sm' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' %>">
+        <i class="fa-solid fa-house-chimney text-base <%= path === '/dashboard' ? 'text-brand-600' : 'text-slate-400' %>"></i>
+        <span>Dashboard</span>
+      </a>
+
+      <!-- ADMIN ROLE NAVIGATION -->
+      <% if (role === 'ADMIN') { %>
+        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3 mt-4 mb-1">Otoritas Wali Kelas</div>
+
+        <a href="/expenses/approvals" class="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition <%= path.startsWith('/expenses/approvals') ? 'bg-brand-50 text-brand-600 shadow-sm' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' %>">
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-stamp text-base <%= path.startsWith('/expenses/approvals') ? 'text-brand-600' : 'text-amber-500' %>"></i>
+            <span>Approval Dana Besar</span>
+          </div>
+          <span class="px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-800 rounded-full border border-amber-200">ACC</span>
+        </a>
+
+        <a href="/users" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition <%= path.startsWith('/users') ? 'bg-brand-50 text-brand-600 shadow-sm' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' %>">
+          <i class="fa-solid fa-users-gear text-base <%= path.startsWith('/users') ? 'text-brand-600' : 'text-slate-400' %>"></i>
+          <span>Kelola Pengguna (RBAC)</span>
+        </a>
+
+        <a href="/periods" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition <%= path.startsWith('/periods') ? 'bg-brand-50 text-brand-600 shadow-sm' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' %>">
+          <i class="fa-solid fa-calendar-check text-base <%= path.startsWith('/periods') ? 'text-brand-600' : 'text-slate-400' %>"></i>
+          <span>Periode Tagihan Kas</span>
+        </a>
+
+        <a href="/incomes" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition <%= path.startsWith('/incomes') ? 'bg-brand-50 text-brand-600 shadow-sm' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' %>">
+          <i class="fa-solid fa-hand-holding-dollar text-base <%= path.startsWith('/incomes') ? 'text-brand-600' : 'text-slate-400' %>"></i>
+          <span>Rekap Kas Masuk</span>
+        </a>
+
+        <a href="/expenses" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition <%= path === '/expenses' ? 'bg-brand-50 text-brand-600 shadow-sm' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' %>">
+          <i class="fa-solid fa-receipt text-base <%= path === '/expenses' ? 'text-brand-600' : 'text-slate-400' %>"></i>
+          <span>Belanja &amp; Kas Keluar</span>
+        </a>
+
+        <a href="/audit" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition <%= path === '/audit' ? 'bg-brand-50 text-brand-600 shadow-sm' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' %>">
+          <i class="fa-solid fa-clipboard-check text-base <%= path === '/audit' ? 'text-brand-600' : 'text-slate-400' %>"></i>
+          <span>Audit Log Pembukuan</span>
+        </a>
+
+        <a href="/audit/print" target="_blank" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition text-slate-600 hover:bg-slate-100 hover:text-slate-900">
+          <i class="fa-solid fa-print text-base text-slate-400"></i>
+          <span>Cetak Buku Kas (BKU)</span>
+        </a>
+      <% } %>
+
+      <!-- BENDAHARA ROLE NAVIGATION -->
+      <% if (role === 'BENDAHARA') { %>
+        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3 mt-4 mb-1">Aktivitas Bendahara</div>
+
+        <a href="/incomes" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition <%= path.startsWith('/incomes') ? 'bg-brand-50 text-brand-600 shadow-sm' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' %>">
+          <i class="fa-solid fa-money-bill-wave text-base <%= path.startsWith('/incomes') ? 'text-brand-600' : 'text-emerald-500' %>"></i>
+          <span>Pencatatan Kas Masuk</span>
+        </a>
+
+        <a href="/expenses" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition <%= path.startsWith('/expenses') ? 'bg-brand-50 text-brand-600 shadow-sm' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' %>">
+          <i class="fa-solid fa-file-invoice-dollar text-base <%= path.startsWith('/expenses') ? 'text-brand-600' : 'text-rose-500' %>"></i>
+          <span>Kas Keluar + Nota</span>
+        </a>
+
+        <a href="/periods" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition <%= path.startsWith('/periods') ? 'bg-brand-50 text-brand-600 shadow-sm' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' %>">
+          <i class="fa-solid fa-sliders text-base <%= path.startsWith('/periods') ? 'text-brand-600' : 'text-slate-400' %>"></i>
+          <span>Setting Periode Tagihan</span>
+        </a>
+
+        <a href="/student/transparansi" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition <%= path.startsWith('/student/transparansi') ? 'bg-brand-50 text-brand-600 shadow-sm' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' %>">
+          <i class="fa-solid fa-eye text-base <%= path.startsWith('/student/transparansi') ? 'text-brand-600' : 'text-slate-400' %>"></i>
+          <span>Transparansi Kas</span>
+        </a>
+
+        <a href="/audit" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition <%= path === '/audit' ? 'bg-brand-50 text-brand-600 shadow-sm' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' %>">
+          <i class="fa-solid fa-book-bookmark text-base <%= path === '/audit' ? 'text-brand-600' : 'text-slate-400' %>"></i>
+          <span>Audit Log Mutasi</span>
+        </a>
+
+        <a href="/audit/print" target="_blank" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition text-slate-600 hover:bg-slate-100 hover:text-slate-900">
+          <i class="fa-solid fa-print text-base text-slate-400"></i>
+          <span>Cetak Buku Kas (BKU)</span>
+        </a>
+      <% } %>
+
+      <!-- SISWA ROLE NAVIGATION -->
+      <% if (role === 'SISWA') { %>
+        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3 mt-4 mb-1">Akses Siswa</div>
+
+        <a href="/student/tagihan" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition <%= path.startsWith('/student/tagihan') ? 'bg-brand-50 text-brand-600 shadow-sm' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' %>">
+          <i class="fa-solid fa-circle-check text-base <%= path.startsWith('/student/tagihan') ? 'text-brand-600' : 'text-blue-500' %>"></i>
+          <span>Status Iuran Saya</span>
+        </a>
+
+        <a href="/student/transparansi" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition <%= path.startsWith('/student/transparansi') ? 'bg-brand-50 text-brand-600 shadow-sm' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' %>">
+          <i class="fa-solid fa-chart-pie text-base <%= path.startsWith('/student/transparansi') ? 'text-brand-600' : 'text-purple-500' %>"></i>
+          <span>Transparansi Kas Kelas</span>
+        </a>
+      <% } %>
+    </nav>
+
+    <!-- Footer info in Sidebar -->
+    <div class="mt-auto pt-4 border-t border-slate-100 text-center">
+      <div class="text-[11px] font-medium text-slate-400">
+        SiKas Pintar v1.0 • UKK Topik 2
+      </div>
+      <div class="text-[10px] text-emerald-600 font-semibold mt-0.5 flex items-center justify-center gap-1">
+        <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+        Sistem Aman &amp; Terverifikasi
+      </div>
+    </div>
+  </div>
+</aside>

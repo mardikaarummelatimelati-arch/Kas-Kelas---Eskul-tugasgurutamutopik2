@@ -1,0 +1,92 @@
+<header class="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-x-4 border-b border-slate-200 bg-white/95 px-4 shadow-sm backdrop-blur sm:gap-x-6 sm:px-6 lg:px-8">
+  <!-- Mobile Menu Button -->
+  <button id="mobile-menu-btn" type="button" class="-m-2.5 p-2.5 text-slate-700 lg:hidden hover:text-brand-600 focus:outline-none">
+    <span class="sr-only">Buka sidebar</span>
+    <i class="fa-solid fa-bars text-xl"></i>
+  </button>
+
+  <!-- Left: Page Title / Breadcrumb -->
+  <div class="flex flex-1 items-center gap-x-3">
+    <div class="flex items-center gap-2 text-sm text-slate-500">
+      <span class="font-medium text-slate-800"><%= typeof title !== 'undefined' ? title : 'Dashboard' %></span>
+    </div>
+  </div>
+
+  <!-- Right: Info & User Profile -->
+  <div class="flex items-center gap-x-4 lg:gap-x-6">
+    <!-- Class Tag -->
+    <div class="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+      <i class="fa-solid fa-graduation-cap text-brand-600"></i>
+      <span>XII RPL 1 • 2026/2027</span>
+    </div>
+
+    <!-- Quick Switcher Dropdown for Testing -->
+    <div class="relative group">
+      <button type="button" class="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg bg-brand-50 text-brand-700 border border-brand-200 hover:bg-brand-100 transition">
+        <i class="fa-solid fa-shuffle text-[10px]"></i>
+        <span class="hidden sm:inline">Ganti Akun Demo</span>
+        <i class="fa-solid fa-chevron-down text-[10px]"></i>
+      </button>
+      <div class="absolute right-0 mt-1 w-52 origin-top-right rounded-xl bg-white p-2 shadow-lg ring-1 ring-slate-900/5 focus:outline-none hidden group-hover:block z-50">
+        <div class="text-[11px] font-semibold text-slate-400 px-2 py-1 uppercase tracking-wider">Switch Peran Demo</div>
+        <a href="/auth/quick-login/admin" class="flex items-center gap-2 px-2.5 py-2 text-xs rounded-lg text-slate-700 hover:bg-purple-50 hover:text-purple-700 transition">
+          <i class="fa-solid fa-user-shield text-purple-600"></i>
+          <div>
+            <div class="font-bold">Wali Kelas / Admin</div>
+            <div class="text-[10px] text-slate-500">Drs. H. Bambang Sudarsono</div>
+          </div>
+        </a>
+        <a href="/auth/quick-login/bendahara" class="flex items-center gap-2 px-2.5 py-2 text-xs rounded-lg text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 transition">
+          <i class="fa-solid fa-wallet text-emerald-600"></i>
+          <div>
+            <div class="font-bold">Bendahara Siswa</div>
+            <div class="text-[10px] text-slate-500">Sarah Amelia Putri</div>
+          </div>
+        </a>
+        <a href="/auth/quick-login/siswa" class="flex items-center gap-2 px-2.5 py-2 text-xs rounded-lg text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition">
+          <i class="fa-solid fa-user-graduate text-blue-600"></i>
+          <div>
+            <div class="font-bold">Siswa / Anggota</div>
+            <div class="text-[10px] text-slate-500">Muhammad Rizky Pratama</div>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Separator -->
+    <div class="hidden lg:block lg:h-6 lg:w-px lg:bg-slate-200"></div>
+
+    <!-- User Profile Dropdown / Info -->
+    <div class="flex items-center gap-3">
+      <% 
+        let roleBg = 'bg-blue-100 text-blue-700 border-blue-200';
+        let roleLabel = 'Siswa';
+        let roleIcon = 'fa-user-graduate';
+        if (currentUser && currentUser.role === 'ADMIN') {
+          roleBg = 'bg-purple-100 text-purple-700 border-purple-200';
+          roleLabel = 'Wali Kelas / Admin';
+          roleIcon = 'fa-user-shield';
+        } else if (currentUser && currentUser.role === 'BENDAHARA') {
+          roleBg = 'bg-emerald-100 text-emerald-700 border-emerald-200';
+          roleLabel = 'Bendahara Siswa';
+          roleIcon = 'fa-wallet';
+        }
+      %>
+      <div class="hidden sm:flex flex-col text-right">
+        <span class="text-xs font-bold text-slate-800"><%= currentUser ? currentUser.nama : 'Pengguna' %></span>
+        <span class="inline-flex items-center gap-1 self-end text-[10px] font-semibold px-2 py-0.5 rounded-full border <%= roleBg %>">
+          <i class="fa-solid <%= roleIcon %> text-[9px]"></i> <%= roleLabel %>
+        </span>
+      </div>
+
+      <div class="h-9 w-9 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-sm shadow-sm ring-2 ring-white">
+        <%= currentUser ? currentUser.nama.charAt(0).toUpperCase() : 'U' %>
+      </div>
+
+      <!-- Logout Button -->
+      <a href="/auth/logout" title="Keluar dari sistem" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition" onclick="return confirm('Apakah Anda yakin ingin keluar dari sistem?');">
+        <i class="fa-solid fa-arrow-right-from-bracket text-base"></i>
+      </a>
+    </div>
+  </div>
+</header>

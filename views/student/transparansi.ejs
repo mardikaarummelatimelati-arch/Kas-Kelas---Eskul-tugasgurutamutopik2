@@ -1,0 +1,151 @@
+<%- include('../layouts/header') %>
+<%- include('../layouts/sidebar') %>
+
+<div class="lg:pl-72 flex flex-col flex-1 min-h-screen">
+  <%- include('../layouts/navbar') %>
+
+  <main class="flex-1 p-4 sm:p-6 lg:p-8 space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200 mb-2">
+          <i class="fa-solid fa-lock-open"></i> Akses Terbuka untuk Seluruh Anggota Kelas
+        </div>
+        <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Transparansi Saldo &amp; Belanja Kas Kelas</h1>
+        <p class="text-xs text-slate-500 mt-1">Laporan terbuka penggunaan dana kas kelas XII RPL 1. Seluruh siswa berhak melihat saldo dan memeriksa bukti nota belanja.</p>
+      </div>
+      <a href="/audit/print" target="_blank" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-md transition">
+        <i class="fa-solid fa-file-pdf"></i>
+        <span>Unduh Rekap Buku Kas (BKU)</span>
+      </a>
+    </div>
+
+    <!-- 3 Big Metric Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+      <!-- Saldo Kas Aktif -->
+      <div class="bg-gradient-to-br from-brand-600 to-indigo-700 rounded-2xl p-6 text-white shadow-lg hover-lift">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-extrabold uppercase tracking-wider text-blue-200">Saldo Kas Kelas Saat Ini</span>
+          <div class="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center text-lg backdrop-blur-sm">
+            <i class="fa-solid fa-vault"></i>
+          </div>
+        </div>
+        <div class="text-3xl font-black mt-3 tracking-tight"><%= formatRupiah(summary.currentBalance) %></div>
+        <div class="mt-2 flex items-center gap-1.5 text-xs text-blue-100 font-semibold">
+          <i class="fa-solid fa-circle-check"></i>
+          <span>Tersimpan aman di kas kelas</span>
+        </div>
+      </div>
+
+      <!-- Total Kas Masuk -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm hover-lift">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Total Penerimaan Kas</span>
+          <div class="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg">
+            <i class="fa-solid fa-hand-holding-dollar"></i>
+          </div>
+        </div>
+        <div class="text-2xl font-black text-emerald-600 mt-3 tracking-tight"><%= formatRupiah(summary.totalIncome) %></div>
+        <div class="mt-1 text-xs text-slate-500 font-medium">Dari iuran wajib seluruh siswa</div>
+      </div>
+
+      <!-- Total Belanja Kelas -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm hover-lift">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold uppercase tracking-wider text-rose-600">Total Pengeluaran Belanja</span>
+          <div class="h-10 w-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-lg">
+            <i class="fa-solid fa-receipt"></i>
+          </div>
+        </div>
+        <div class="text-2xl font-black text-rose-600 mt-3 tracking-tight"><%= formatRupiah(summary.totalExpense) %></div>
+        <div class="mt-1 text-xs text-slate-500 font-medium">Disertai bukti fisik nota pembelian</div>
+      </div>
+    </div>
+
+    <!-- Category Breakdown Pills -->
+    <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm">
+      <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Distribusi Penggunaan Dana per Kategori</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <% Object.keys(categoryTotals).forEach(cat => { %>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="text-xs font-bold text-slate-700"><%= cat %></div>
+            <div class="text-sm font-black text-rose-600 mt-1"><%= formatRupiah(categoryTotals[cat]) %></div>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+
+    <!-- Detail Belanja Kas Kelas Lengkap dengan Bukti Nota -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+      <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-900">Rincian Belanja Kas Kelas Terverifikasi</h2>
+          <p class="text-xs text-slate-500">Seluruh pengeluaran berikut telah disetujui dan dibuktikan dengan nota sah</p>
+        </div>
+        <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+          <i class="fa-solid fa-check-double mr-1"></i> Terbuka &amp; Terverifikasi
+        </span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-50 text-slate-500 border-b border-slate-200 font-bold uppercase tracking-wider">
+              <th class="py-3 px-4">Tanggal Belanja</th>
+              <th class="py-3 px-4">Barang / Keperluan Kelas</th>
+              <th class="py-3 px-4">Kategori</th>
+              <th class="py-3 px-4">Nominal</th>
+              <th class="py-3 px-4">Bukti Foto Nota</th>
+              <th class="py-3 px-4">Status Approval</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 font-medium">
+            <% if (expenses.length === 0) { %>
+              <tr>
+                <td colspan="6" class="py-8 text-center text-slate-400 italic">Belum ada pengeluaran kas yang dicatat.</td>
+              </tr>
+            <% } else { %>
+              <% expenses.forEach(exp => { %>
+                <tr class="hover:bg-slate-50/60 transition">
+                  <td class="py-3.5 px-4 font-semibold text-slate-700">
+                    <%= formatDate(exp.tglPengeluaran, 'full') %>
+                  </td>
+                  <td class="py-3.5 px-4 max-w-sm">
+                    <div class="font-bold text-slate-900 text-sm"><%= exp.judul %></div>
+                    <div class="text-[11px] text-slate-500 mt-0.5"><%= exp.deskripsi || 'Pembelian keperluan kelas' %></div>
+                  </td>
+                  <td class="py-3.5 px-4">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                      <%= exp.kategori %>
+                    </span>
+                  </td>
+                  <td class="py-3.5 px-4 font-black text-rose-600 text-sm">
+                    <%= formatRupiah(exp.nominal) %>
+                  </td>
+                  <td class="py-3.5 px-4">
+                    <% if (exp.fotoNotaUrl) { %>
+                      <button onclick="previewImage('<%= exp.fotoNotaUrl %>', '<%= exp.judul %>')" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200 transition">
+                        <i class="fa-solid fa-image text-brand-600"></i>
+                        <span>Lihat Bukti Nota</span>
+                      </button>
+                    <% } else { %>
+                      <span class="text-slate-400 italic">Tidak ada lampiran</span>
+                    <% } %>
+                  </td>
+                  <td class="py-3.5 px-4">
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                      <i class="fa-solid fa-circle-check text-[9px]"></i> Disetujui
+                    </span>
+                    <div class="text-[10px] text-slate-400 mt-0.5">Oleh <%= exp.approvedBy ? exp.approvedBy.nama : 'Wali Kelas' %></div>
+                  </td>
+                </tr>
+              <% }); %>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<%- include('../layouts/footer') %>

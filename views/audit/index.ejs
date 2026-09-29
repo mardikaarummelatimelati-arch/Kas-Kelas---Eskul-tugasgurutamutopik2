@@ -1,0 +1,133 @@
+<%- include('../layouts/header') %>
+<%- include('../layouts/sidebar') %>
+
+<div class="lg:pl-72 flex flex-col flex-1 min-h-screen">
+  <%- include('../layouts/navbar') %>
+
+  <main class="flex-1 p-4 sm:p-6 lg:p-8 space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Audit Log &amp; Rekapitulasi Saldo Kas</h1>
+        <p class="text-xs text-slate-500 mt-1">Audit trail lengkap setiap mutasi kas masuk dan kas keluar dengan pencatatan saldo sebelum dan sesudah.</p>
+      </div>
+      <a href="/audit/print" target="_blank" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-md transition">
+        <i class="fa-solid fa-print"></i>
+        <span>Cetak Buku Kas Umum (PDF)</span>
+      </a>
+    </div>
+
+    <!-- Integrity & Summary Card -->
+    <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-100">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Verifikasi Integritas Data Keuangan</span>
+          <div class="flex items-center gap-3 mt-1.5">
+            <div class="text-3xl font-black text-slate-900 tracking-tight"><%= formatRupiah(summary.currentBalance) %></div>
+            <% if (isSynchronized) { %>
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                <i class="fa-solid fa-shield-check text-emerald-600"></i>
+                <span>SALDO SINKRON &amp; VALID</span>
+              </span>
+            <% } else { %>
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-rose-100 text-rose-800 border border-rose-300">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>PERLU REKONSILIASI</span>
+              </span>
+            <% } %>
+          </div>
+          <p class="text-xs text-slate-500 mt-1">Saldo akhir pada log audit tepat sesuai dengan agregat mutasi penerimaan dikurangi pengeluaran disetujui.</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 shrink-0 text-xs">
+          <div class="p-3 rounded-xl bg-emerald-50/70 border border-emerald-100 text-right">
+            <span class="text-[10px] text-emerald-700 font-bold uppercase block">Akumulasi Masuk</span>
+            <span class="text-sm font-black text-emerald-700"><%= formatRupiah(summary.totalIncome) %></span>
+          </div>
+          <div class="p-3 rounded-xl bg-rose-50/70 border border-rose-100 text-right">
+            <span class="text-[10px] text-rose-700 font-bold uppercase block">Akumulasi Keluar</span>
+            <span class="text-sm font-black text-rose-700"><%= formatRupiah(summary.totalExpense) %></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter Jenis Mutasi -->
+      <div class="pt-4 flex items-center justify-between">
+        <div class="flex items-center gap-1.5 text-xs font-bold">
+          <a href="/audit" class="px-3 py-1.5 rounded-lg transition <%= selectedJenis === 'all' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' %>">
+            Semua Mutasi (<%= logs.length %>)
+          </a>
+          <a href="/audit?jenisMutasi=MASUK" class="px-3 py-1.5 rounded-lg transition <%= selectedJenis === 'MASUK' ? 'bg-emerald-600 text-white' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' %>">
+            Kas Masuk Saja
+          </a>
+          <a href="/audit?jenisMutasi=KELUAR" class="px-3 py-1.5 rounded-lg transition <%= selectedJenis === 'KELUAR' ? 'bg-rose-600 text-white' : 'bg-rose-50 text-rose-700 hover:bg-rose-100' %>">
+            Kas Keluar Saja
+          </a>
+        </div>
+
+        <div class="text-[11px] text-slate-400">
+          Diurutkan dari mutasi paling baru
+        </div>
+      </div>
+    </div>
+
+    <!-- Table Audit Log -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-50 text-slate-500 border-b border-slate-200 font-bold uppercase tracking-wider">
+              <th class="py-3 px-4">No &amp; Waktu Log</th>
+              <th class="py-3 px-4">Uraian / Keterangan Mutasi</th>
+              <th class="py-3 px-4 text-right">Saldo Sebelum</th>
+              <th class="py-3 px-4 text-center">Jenis Mutasi</th>
+              <th class="py-3 px-4 text-right">Nominal Mutasi</th>
+              <th class="py-3 px-4 text-right">Saldo Sesudah</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 font-medium">
+            <% if (logs.length === 0) { %>
+              <tr>
+                <td colspan="6" class="py-8 text-center text-slate-400 italic">Belum ada catatan mutasi kas.</td>
+              </tr>
+            <% } else { %>
+              <% logs.forEach((log, index) => { %>
+                <tr class="hover:bg-slate-50/60 transition font-mono">
+                  <td class="py-3 px-4">
+                    <div class="font-bold text-slate-900">#LOG-<%= String(log.id).padStart(4, '0') %></div>
+                    <div class="text-[10px] text-slate-400 font-sans"><%= formatDate(log.createdAt, 'time') %></div>
+                  </td>
+                  <td class="py-3 px-4 font-sans max-w-md">
+                    <div class="font-semibold text-slate-900"><%= log.keterangan %></div>
+                  </td>
+                  <td class="py-3 px-4 text-right text-slate-600">
+                    <%= formatRupiah(log.saldoSebelum) %>
+                  </td>
+                  <td class="py-3 px-4 text-center font-sans">
+                    <% if (log.jenisMutasi === 'MASUK') { %>
+                      <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                        <i class="fa-solid fa-arrow-down text-[9px]"></i> MASUK
+                      </span>
+                    <% } else { %>
+                      <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-100 text-rose-800 border border-rose-200">
+                        <i class="fa-solid fa-arrow-up text-[9px]"></i> KELUAR
+                      </span>
+                    <% } %>
+                  </td>
+                  <td class="py-3 px-4 text-right font-bold <%= log.jenisMutasi === 'MASUK' ? 'text-emerald-600' : 'text-rose-600' %>">
+                    <%= log.jenisMutasi === 'MASUK' ? '+' : '-' %><%= formatRupiah(log.nominal) %>
+                  </td>
+                  <td class="py-3 px-4 text-right font-black text-slate-900">
+                    <%= formatRupiah(log.saldoSesudah) %>
+                  </td>
+                </tr>
+              <% }); %>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<%- include('../layouts/footer') %>

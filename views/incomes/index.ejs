@@ -1,0 +1,286 @@
+<%- include('../layouts/header') %>
+<%- include('../layouts/sidebar') %>
+
+<div class="lg:pl-72 flex flex-col flex-1 min-h-screen">
+  <%- include('../layouts/navbar') %>
+
+  <main class="flex-1 p-4 sm:p-6 lg:p-8 space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Pencatatan Kas Masuk (Iuran Siswa)</h1>
+        <p class="text-xs text-slate-500 mt-1">Verifikasi dan catat penerimaan uang kas dari siswa. Saldo kas bertambah otomatis secara real-time.</p>
+      </div>
+      <button onclick="openModal('manualIncomeModal')" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-lg shadow-brand-500/20 transition active:scale-95">
+        <i class="fa-solid fa-plus-circle"></i>
+        <span>Tambah Pembayaran Kas Manual</span>
+      </button>
+    </div>
+
+    <!-- Alerts -->
+    <% if (typeof success !== 'undefined' && success) { %>
+      <div class="auto-dismiss-alert p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-circle-check text-emerald-600 text-sm"></i>
+          <span><%= success %></span>
+        </div>
+        <button onclick="this.parentElement.remove()" class="text-emerald-500 hover:text-emerald-700"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+    <% } %>
+
+    <% if (typeof error !== 'undefined' && error) { %>
+      <div class="auto-dismiss-alert p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-triangle-exclamation text-rose-600 text-sm"></i>
+          <span><%= error %></span>
+        </div>
+        <button onclick="this.parentElement.remove()" class="text-rose-500 hover:text-rose-700"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+    <% } %>
+
+    <!-- 4 Quick Stats -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Tagihan Siswa</span>
+        <div class="text-xl font-black text-slate-900 mt-1"><%= stats.totalSemua %> Record</div>
+      </div>
+      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Sudah Lunas</span>
+        <div class="text-xl font-black text-emerald-600 mt-1"><%= stats.totalLunas %> Siswa</div>
+      </div>
+      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-amber-600">Menunggak</span>
+        <div class="text-xl font-black text-amber-600 mt-1"><%= stats.totalMenunggak %> Siswa</div>
+      </div>
+      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-brand-600">Dana Terkumpul</span>
+        <div class="text-xl font-black text-brand-600 mt-1"><%= formatRupiah(stats.nominalTerkumpul) %></div>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <!-- Periode Dropdown & Status Filter -->
+      <form action="/incomes" method="GET" class="flex flex-wrap items-center gap-2">
+        <select name="periodId" onchange="this.form.submit()" class="px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-brand-500">
+          <option value="all">Semua Periode Tagihan</option>
+          <% periods.forEach(p => { %>
+            <option value="<%= p.id %>" <%= selectedPeriod == p.id ? 'selected' : '' %>><%= p.namaPeriode %></option>
+          <% }); %>
+        </select>
+
+        <select name="status" onchange="this.form.submit()" class="px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-brand-500">
+          <option value="all" <%= selectedStatus === 'all' ? 'selected' : '' %>>Semua Status</option>
+          <option value="LUNAS" <%= selectedStatus === 'LUNAS' ? 'selected' : '' %>>Hanya Lunas</option>
+          <option value="BELUM" <%= selectedStatus === 'BELUM' ? 'selected' : '' %>>Hanya Menunggak</option>
+        </select>
+      </form>
+
+      <!-- Search Box -->
+      <form action="/incomes" method="GET" class="relative w-full md:w-64">
+        <% if (selectedPeriod !== 'all') { %><input type="hidden" name="periodId" value="<%= selectedPeriod %>"><% } %>
+        <% if (selectedStatus !== 'all') { %><input type="hidden" name="status" value="<%= selectedStatus %>"><% } %>
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+        <input type="text" name="search" value="<%= searchQuery %>" placeholder="Cari nama siswa / NISN..." class="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-brand-500">
+      </form>
+    </div>
+
+    <!-- Table of Student Payments -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-50 text-slate-500 border-b border-slate-200 font-bold uppercase tracking-wider">
+              <th class="py-3 px-4">Nama Siswa &amp; NISN</th>
+              <th class="py-3 px-4">Periode Tagihan</th>
+              <th class="py-3 px-4">Nominal</th>
+              <th class="py-3 px-4">Status</th>
+              <th class="py-3 px-4">Waktu &amp; Metode Bayar</th>
+              <th class="py-3 px-4">Dikonfirmasi Oleh</th>
+              <th class="py-3 px-4 text-center">Aksi Transaksi</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 font-medium">
+            <% if (incomes.length === 0) { %>
+              <tr>
+                <td colspan="7" class="py-8 text-center text-slate-400 italic">Tidak ada catatan pembayaran yang sesuai filter.</td>
+              </tr>
+            <% } else { %>
+              <% incomes.forEach(inc => { 
+                const badge = getStatusBadge(inc.status);
+              %>
+                <tr class="hover:bg-slate-50/60 transition">
+                  <td class="py-3 px-4">
+                    <div class="font-bold text-slate-900 text-sm"><%= inc.student ? inc.student.nama : 'Siswa' %></div>
+                    <div class="text-[11px] text-slate-500 font-mono">NISN: <%= inc.student ? inc.student.nisn || '-' : '-' %> &bull; <%= inc.student ? inc.student.kelas || '' : '' %></div>
+                  </td>
+                  <td class="py-3 px-4">
+                    <div class="font-bold text-slate-800"><%= inc.period ? inc.period.namaPeriode : '-' %></div>
+                    <div class="text-[10px] text-slate-400"><%= inc.period ? inc.period.bulan + ' ' + inc.period.tahun : '' %></div>
+                  </td>
+                  <td class="py-3 px-4 font-black text-slate-900 text-sm">
+                    <%= formatRupiah(inc.nominal) %>
+                  </td>
+                  <td class="py-3 px-4">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border <%= badge.bg %> <%= badge.text %> <%= badge.border %>">
+                      <i class="fa-solid <%= inc.status === 'LUNAS' ? 'fa-circle-check' : 'fa-clock' %> text-[10px]"></i>
+                      <span><%= badge.label %></span>
+                    </span>
+                  </td>
+                  <td class="py-3 px-4">
+                    <% if (inc.status === 'LUNAS') { %>
+                      <div class="font-semibold text-slate-700"><%= formatDate(inc.tglBayar, 'time') %></div>
+                      <span class="inline-block mt-0.5 px-1.5 py-0.2 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                        <%= inc.metodeBayar || 'TUNAI' %>
+                      </span>
+                    <% } else { %>
+                      <span class="text-amber-600 font-medium italic">Belum dibayar</span>
+                    <% } %>
+                  </td>
+                  <td class="py-3 px-4 text-slate-600">
+                    <%= inc.bendahara ? inc.bendahara.nama : '-' %>
+                  </td>
+                  <td class="py-3 px-4 text-center">
+                    <div class="flex items-center justify-center gap-1.5">
+                      <% if (inc.status === 'BELUM') { %>
+                        <button onclick="openPayModal('<%= inc.id %>', '<%= inc.student ? inc.student.nama : 'Siswa' %>', '<%= inc.period ? inc.period.namaPeriode : '' %>', '<%= inc.nominal %>')" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm flex items-center gap-1.5 transition">
+                          <i class="fa-solid fa-check"></i>
+                          <span>Catat LUNAS</span>
+                        </button>
+                      <% } else { %>
+                        <a href="/incomes/receipt/<%= inc.id %>" target="_blank" class="px-2.5 py-1.5 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200 font-bold text-xs flex items-center gap-1 transition" title="Lihat Kuitansi">
+                          <i class="fa-solid fa-receipt text-brand-600"></i>
+                          <span>Kuitansi</span>
+                        </a>
+                        <form action="/incomes/revert/<%= inc.id %>" method="POST" onsubmit="return confirm('Batalkan pelunasan tagihan ini? Saldo kas akan otomatis disesuaikan.');" class="inline">
+                          <button type="submit" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg" title="Batalkan Pelunasan">
+                            <i class="fa-solid fa-rotate-left text-xs"></i>
+                          </button>
+                        </form>
+                      <% } %>
+                    </div>
+                  </td>
+                </tr>
+              <% }); %>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal Catat Bayar (Tandai Lunas) -->
+<div id="payModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+      <h3 class="text-base font-bold text-slate-900">Catat Pembayaran Kas Siswa</h3>
+      <button onclick="closeModal('payModal')" class="text-slate-400 hover:text-slate-600 p-1"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form id="payForm" method="POST" class="space-y-4 mt-4 text-xs">
+      <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+        <div class="text-[10px] text-slate-400 font-bold uppercase">Nama Siswa</div>
+        <div id="payStudentName" class="text-sm font-extrabold text-slate-900">-</div>
+        <div class="text-[10px] text-slate-400 font-bold uppercase mt-2">Periode Tagihan</div>
+        <div id="payPeriodName" class="text-xs font-semibold text-slate-700">-</div>
+      </div>
+
+      <div>
+        <label class="block font-bold text-slate-700 uppercase mb-1">Nominal Diterima (Rp)</label>
+        <input type="number" id="payNominal" name="nominal" required min="1000" step="500" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-brand-500 font-bold text-slate-900">
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Metode Pembayaran</label>
+          <select name="metodeBayar" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-brand-500 bg-white">
+            <option value="TUNAI">TUNAI (Cash)</option>
+            <option value="TRANSFER">TRANSFER (Bank / QRIS)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Tanggal Bayar</label>
+          <input type="date" name="tglBayar" value="<%= new Date().toISOString().slice(0, 10) %>" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-brand-500">
+        </div>
+      </div>
+
+      <div>
+        <label class="block font-bold text-slate-700 uppercase mb-1">Catatan Tambahan (Opsional)</label>
+        <input type="text" name="catatan" placeholder="Lunas tepat waktu" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-brand-500">
+      </div>
+
+      <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+        <button type="button" onclick="closeModal('payModal')" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold hover:bg-slate-200">Batal</button>
+        <button type="submit" class="px-4 py-2 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 shadow-md shadow-emerald-600/20">Konfirmasi LUNAS</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Tambah Tagihan Manual -->
+<div id="manualIncomeModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+      <h3 class="text-base font-bold text-slate-900">Tambah Pembayaran Manual</h3>
+      <button onclick="closeModal('manualIncomeModal')" class="text-slate-400 hover:text-slate-600 p-1"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form action="/incomes/manual" method="POST" class="space-y-4 mt-4 text-xs">
+      <div>
+        <label class="block font-bold text-slate-700 uppercase mb-1">Pilih Periode Tagihan</label>
+        <select name="periodId" required class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-brand-500 bg-white">
+          <% periods.forEach(p => { %>
+            <option value="<%= p.id %>"><%= p.namaPeriode %> (<%= formatRupiah(p.nominalWajib) %>)</option>
+          <% }); %>
+        </select>
+      </div>
+
+      <div>
+        <label class="block font-bold text-slate-700 uppercase mb-1">Pilih Siswa</label>
+        <select name="studentId" required class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-brand-500 bg-white">
+          <% students.forEach(s => { %>
+            <option value="<%= s.id %>"><%= s.nama %> (<%= s.nisn || 'No NISN' %>)</option>
+          <% }); %>
+        </select>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Nominal (Rp)</label>
+          <input type="number" name="nominal" value="20000" required min="1000" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-brand-500">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Status</label>
+          <select name="status" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-brand-500 bg-white">
+            <option value="LUNAS">Langsung LUNAS</option>
+            <option value="BELUM">BELUM (Menunggak)</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="block font-bold text-slate-700 uppercase mb-1">Metode Bayar</label>
+        <select name="metodeBayar" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-brand-500 bg-white">
+          <option value="TUNAI">TUNAI</option>
+          <option value="TRANSFER">TRANSFER</option>
+        </select>
+      </div>
+
+      <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+        <button type="button" onclick="closeModal('manualIncomeModal')" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold hover:bg-slate-200">Batal</button>
+        <button type="submit" class="px-4 py-2 rounded-xl bg-brand-600 text-white font-bold hover:bg-brand-700 shadow-md shadow-brand-500/20">Simpan Transaksi</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openPayModal(id, studentName, periodName, nominal) {
+    document.getElementById('payForm').action = '/incomes/pay/' + id;
+    document.getElementById('payStudentName').textContent = studentName;
+    document.getElementById('payPeriodName').textContent = periodName;
+    document.getElementById('payNominal').value = nominal;
+    openModal('payModal');
+  }
+</script>
+
+<%- include('../layouts/footer') %>

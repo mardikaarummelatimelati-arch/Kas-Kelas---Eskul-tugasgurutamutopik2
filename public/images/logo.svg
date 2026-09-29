@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <rect width="48" height="48" rx="12" fill="#2563eb"/>
+  <!-- Wallet icon / Safe icon -->
+  <path d="M12 16C12 14.8954 12.8954 14 14 14H34C35.1046 14 36 14.8954 36 16V32C36 33.1046 35.1046 34 34 34H14C12.8954 34 12 33.1046 12 32V16Z" fill="#3b82f6" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M28 20H36V28H28C25.7909 28 24 26.2091 24 24C24 21.7909 25.7909 20 28 20Z" fill="#1d4ed8" stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/>
+  <circle cx="30" cy="24" r="1.5" fill="#facc15"/>
+  <path d="M16 14V12C16 10.8954 16.8954 10 18 10H30C31.1046 10 32 10.8954 32 12V14" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+</svg>

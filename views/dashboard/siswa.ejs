@@ -1,0 +1,203 @@
+<%- include('../layouts/header') %>
+<%- include('../layouts/sidebar') %>
+
+<div class="lg:pl-72 flex flex-col flex-1 min-h-screen">
+  <%- include('../layouts/navbar') %>
+
+  <main class="flex-1 p-4 sm:p-6 lg:p-8 space-y-6">
+    <!-- Welcome Banner Siswa -->
+    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-700 via-indigo-700 to-sky-700 p-6 sm:p-8 text-white shadow-xl">
+      <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/20 text-blue-100 backdrop-blur-sm mb-3">
+            <i class="fa-solid fa-user-graduate"></i> Akun Siswa: <%= user.kelas || 'Kelas XII RPL 1' %>
+          </span>
+          <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Halo, <%= user.nama %></h1>
+          <p class="text-sm text-blue-100 mt-1 max-w-2xl">
+            Selamat datang di Portal Transparansi Kas Kelas. Anda dapat memantau saldo kelas secara terbuka, mengecek status iuran pribadi, dan mencetak bukti pembayaran digital.
+          </p>
+        </div>
+        <div class="shrink-0 flex items-center gap-2">
+          <a href="/student/transparansi" class="px-4 py-2.5 rounded-xl bg-white text-blue-900 hover:bg-blue-50 font-bold text-xs shadow-lg shadow-black/10 flex items-center gap-2 transition">
+            <i class="fa-solid fa-eye text-brand-600"></i>
+            <span>Transparansi Kas Kelas</span>
+          </a>
+        </div>
+      </div>
+      <!-- Background pattern -->
+      <div class="absolute -right-6 -bottom-10 opacity-10 pointer-events-none">
+        <i class="fa-solid fa-graduation-cap text-[220px]"></i>
+      </div>
+    </div>
+
+    <!-- 3 Stat Cards for Student -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+      <!-- Saldo Kas Kelas Terkini -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover-lift">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Saldo Kas Kelas XII RPL 1</span>
+          <div class="h-10 w-10 rounded-xl bg-blue-50 text-brand-600 flex items-center justify-center text-lg">
+            <i class="fa-solid fa-vault"></i>
+          </div>
+        </div>
+        <div class="mt-3">
+          <div class="text-2xl font-black text-slate-900 tracking-tight"><%= formatRupiah(summary.currentBalance) %></div>
+          <div class="mt-1 flex items-center gap-1.5 text-xs text-emerald-600 font-semibold">
+            <i class="fa-solid fa-shield-check"></i>
+            <span>Transparan &amp; Terbuka</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Iuran Pribadi Lunas -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover-lift">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Iuran Saya (Lunas)</span>
+          <div class="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+        </div>
+        <div class="mt-3">
+          <div class="text-2xl font-black text-emerald-600 tracking-tight"><%= formatRupiah(myPaid) %></div>
+          <div class="mt-1 text-xs text-slate-500">Tercatat sah oleh bendahara</div>
+        </div>
+      </div>
+
+      <!-- Tunggakan Iuran -->
+      <div class="bg-white rounded-2xl p-5 border <%= myUnpaid > 0 ? 'border-amber-300 bg-amber-50/20' : 'border-slate-200/80' %> shadow-sm hover-lift">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold uppercase tracking-wider <%= myUnpaid > 0 ? 'text-amber-700' : 'text-slate-400' %>">Tunggakan Iuran Saya</span>
+          <div class="h-10 w-10 rounded-xl <%= myUnpaid > 0 ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-400' %> flex items-center justify-center text-lg">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+          </div>
+        </div>
+        <div class="mt-3">
+          <div class="text-2xl font-black <%= myUnpaid > 0 ? 'text-amber-700' : 'text-slate-900' %> tracking-tight">
+            <%= formatRupiah(myUnpaid) %>
+          </div>
+          <div class="mt-1 text-xs font-semibold <%= myUnpaid > 0 ? 'text-amber-600' : 'text-emerald-600' %>">
+            <%= myUnpaid > 0 ? 'Segera bayar ke Bendahara Kelas' : 'Lunas! Tidak ada tunggakan' %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table: Status Tagihan Iuran Siswa Pribadi -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+      <div class="p-5 sm:p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-900">Rincian Status Iuran Kas Pribadi Saya</h2>
+          <p class="text-xs text-slate-500">Histori pembayaran iuran dan unduh tanda terima resmi</p>
+        </div>
+        <div class="text-xs font-medium text-slate-500">
+          NISN: <span class="font-bold text-slate-700"><%= user.nisn || '-' %></span>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-50/80 text-slate-500 border-b border-slate-200 font-bold uppercase tracking-wider">
+              <th class="py-3 px-4">Periode Tagihan</th>
+              <th class="py-3 px-4">Nominal Wajib</th>
+              <th class="py-3 px-4">Status Pembayaran</th>
+              <th class="py-3 px-4">Tanggal Pembayaran</th>
+              <th class="py-3 px-4">Diterima Oleh</th>
+              <th class="py-3 px-4 text-center">Tanda Terima / Kuitansi</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 font-medium">
+            <% if (myIncomes.length === 0) { %>
+              <tr>
+                <td colspan="6" class="py-8 text-center text-slate-400 italic">Belum ada data tagihan kas untuk Anda.</td>
+              </tr>
+            <% } else { %>
+              <% myIncomes.forEach(inc => { 
+                const badge = getStatusBadge(inc.status);
+              %>
+                <tr class="hover:bg-slate-50/60 transition">
+                  <td class="py-3 px-4">
+                    <div class="font-bold text-slate-900"><%= inc.period ? inc.period.namaPeriode : '-' %></div>
+                    <div class="text-[10px] text-slate-400"><%= inc.period ? inc.period.bulan + ' ' + inc.period.tahun : '' %></div>
+                  </td>
+                  <td class="py-3 px-4 font-black text-slate-800 text-sm">
+                    <%= formatRupiah(inc.nominal) %>
+                  </td>
+                  <td class="py-3 px-4">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border <%= badge.bg %> <%= badge.text %> <%= badge.border %>">
+                      <i class="fa-solid <%= inc.status === 'LUNAS' ? 'fa-circle-check' : 'fa-clock' %> text-[10px]"></i>
+                      <span><%= badge.label %></span>
+                    </span>
+                  </td>
+                  <td class="py-3 px-4">
+                    <% if (inc.status === 'LUNAS') { %>
+                      <div class="font-semibold text-slate-700"><%= formatDate(inc.tglBayar, 'full') %></div>
+                      <div class="text-[10px] text-slate-400">Metode: <%= inc.metodeBayar || 'TUNAI' %></div>
+                    <% } else { %>
+                      <span class="text-amber-600 font-medium italic">Belum Dibayar</span>
+                    <% } %>
+                  </td>
+                  <td class="py-3 px-4 text-slate-600">
+                    <%= inc.bendahara ? inc.bendahara.nama : '-' %>
+                  </td>
+                  <td class="py-3 px-4 text-center">
+                    <% if (inc.status === 'LUNAS') { %>
+                      <a href="/incomes/receipt/<%= inc.id %>" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200 font-bold text-xs transition">
+                        <i class="fa-solid fa-receipt text-brand-600"></i>
+                        <span>Kuitansi Digital</span>
+                      </a>
+                    <% } else { %>
+                      <span class="text-slate-400 text-[11px] italic">Kuitansi belum tersedia</span>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }); %>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Section: Transparansi Pengeluaran Kelas Terbaru -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 sm:p-6">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
+        <div>
+          <h2 class="text-base font-bold text-slate-900">Transparansi Pengeluaran Kelas Terbaru</h2>
+          <p class="text-xs text-slate-500">Kemana uang kas kelas dibelanjakan oleh pengurus kelas</p>
+        </div>
+        <a href="/student/transparansi" class="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1">
+          <span>Lihat Laporan Lengkap</span>
+          <i class="fa-solid fa-chevron-right text-[10px]"></i>
+        </a>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <% recentApprovedExpenses.forEach(exp => { %>
+          <div class="p-4 rounded-xl border border-slate-200/90 bg-slate-50/50 hover:bg-white hover:shadow-md transition">
+            <div class="flex items-start justify-between gap-2">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200/70 text-slate-700">
+                <%= exp.kategori %>
+              </span>
+              <span class="text-[10px] text-slate-400 font-medium">
+                <%= formatDate(exp.tglPengeluaran, 'short') %>
+              </span>
+            </div>
+            <h3 class="text-xs font-bold text-slate-900 mt-2 line-clamp-1"><%= exp.judul %></h3>
+            <p class="text-[11px] text-slate-500 mt-0.5 line-clamp-2"><%= exp.deskripsi || 'Pembelian keperluan kelas' %></p>
+            <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+              <span class="text-xs font-black text-rose-600"><%= formatRupiah(exp.nominal) %></span>
+              <% if (exp.fotoNotaUrl) { %>
+                <button onclick="previewImage('<%= exp.fotoNotaUrl %>', '<%= exp.judul %>')" class="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1">
+                  <i class="fa-solid fa-image"></i>
+                  <span>Nota</span>
+                </button>
+              <% } %>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+  </main>
+</div>
+
+<%- include('../layouts/footer') %>

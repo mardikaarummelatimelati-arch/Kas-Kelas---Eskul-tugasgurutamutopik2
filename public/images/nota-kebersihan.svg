@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="500" viewBox="0 0 400 500" style="background:#fff; font-family: monospace, sans-serif;">
+  <rect width="400" height="500" fill="#fafafa" stroke="#e2e8f0" stroke-width="2"/>
+  <text x="200" y="45" font-size="18" font-weight="bold" text-anchor="middle" fill="#1e293b">TOKO PERLENGKAPAN BERKAH</text>
+  <text x="200" y="65" font-size="11" text-anchor="middle" fill="#64748b">Pasar Tradisional Blok A No. 12</text>
+  <line x1="20" y1="85" x2="380" y2="85" stroke="#94a3b8" stroke-dasharray="4"/>
+  <text x="25" y="110" font-size="12" fill="#334155">No: NOTA-2026/08/25-112</text>
+  <text x="25" y="130" font-size="12" fill="#334155">Tgl: 25 Agustus 2026 14:10</text>
+  <line x1="20" y1="150" x2="380" y2="150" stroke="#cbd5e1"/>
+  
+  <text x="25" y="180" font-size="12" font-weight="bold" fill="#0f172a">Sapu Ijuk Rayung (1)</text>
+  <text x="375" y="180" font-size="12" text-anchor="end" fill="#0f172a">Rp 20.000</text>
+  
+  <text x="25" y="210" font-size="12" font-weight="bold" fill="#0f172a">Pel Lantai Sumbu (1)</text>
+  <text x="375" y="210" font-size="12" text-anchor="end" fill="#0f172a">Rp 18.000</text>
+  
+  <text x="25" y="240" font-size="12" font-weight="bold" fill="#0f172a">Karbol Wangi Cemara 800ml</text>
+  <text x="375" y="240" font-size="12" text-anchor="end" fill="#0f172a">Rp 12.000</text>
+
+  <line x1="20" y1="270" x2="380" y2="270" stroke="#cbd5e1"/>
+  <text x="25" y="300" font-size="14" font-weight="bold" fill="#0f172a">TOTAL BELANJA</text>
+  <text x="375" y="300" font-size="15" font-weight="bold" text-anchor="end" fill="#059669">Rp 50.000</text>
+
+  <!-- Stamp -->
+  <g transform="translate(130, 340) rotate(-5)">
+    <rect width="140" height="50" rx="6" fill="none" stroke="#ef4444" stroke-width="2.5"/>
+    <text x="70" y="32" font-size="18" font-weight="bold" text-anchor="middle" fill="#ef4444">LUNAS</text>
+    <text x="70" y="44" font-size="8" text-anchor="middle" fill="#ef4444">TOKO BERKAH</text>
+  </g>
+</svg>

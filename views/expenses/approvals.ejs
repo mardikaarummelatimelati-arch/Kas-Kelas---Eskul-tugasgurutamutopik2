@@ -1,0 +1,188 @@
+<%- include('../layouts/header') %>
+<%- include('../layouts/sidebar') %>
+
+<div class="lg:pl-72 flex flex-col flex-1 min-h-screen">
+  <%- include('../layouts/navbar') %>
+
+  <main class="flex-1 p-4 sm:p-6 lg:p-8 space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 border border-purple-200 mb-2">
+          <i class="fa-solid fa-stamp"></i> Otoritas Khusus Wali Kelas / Pembina
+        </div>
+        <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Persetujuan Usulan Pengeluaran Dana Besar</h1>
+        <p class="text-xs text-slate-500 mt-1">Review dan verifikasi usulan belanja kelas berbiaya besar (&gt; Rp 150.000) sebelum saldo kas dicairkan oleh bendahara.</p>
+      </div>
+      <div class="p-3 rounded-xl bg-white border border-slate-200 text-right shadow-sm">
+        <span class="text-[10px] text-slate-400 font-bold uppercase block">Saldo Kas Tersedia:</span>
+        <span class="text-lg font-black text-brand-600"><%= formatRupiah(summary.currentBalance) %></span>
+      </div>
+    </div>
+
+    <!-- Alerts -->
+    <% if (typeof success !== 'undefined' && success) { %>
+      <div class="auto-dismiss-alert p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-circle-check text-emerald-600 text-sm"></i>
+          <span><%= success %></span>
+        </div>
+        <button onclick="this.parentElement.remove()" class="text-emerald-500 hover:text-emerald-700"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+    <% } %>
+
+    <% if (typeof error !== 'undefined' && error) { %>
+      <div class="auto-dismiss-alert p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-triangle-exclamation text-rose-600 text-sm"></i>
+          <span><%= error %></span>
+        </div>
+        <button onclick="this.parentElement.remove()" class="text-rose-500 hover:text-rose-700"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+    <% } %>
+
+    <!-- Section: Usulan Menunggu Approval -->
+    <div class="space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <span>Daftar Usulan Menunggu Keputusan</span>
+          <span class="px-2 py-0.5 rounded-full text-xs font-bold <%= pendingExpenses.length > 0 ? 'bg-amber-100 text-amber-800 animate-pulse' : 'bg-slate-100 text-slate-600' %>">
+            <%= pendingExpenses.length %> Usulan
+          </span>
+        </h2>
+      </div>
+
+      <% if (pendingExpenses.length === 0) { %>
+        <div class="bg-white rounded-2xl p-10 text-center border border-slate-200/80 shadow-sm">
+          <div class="h-14 w-14 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center text-2xl mb-3">
+            <i class="fa-solid fa-clipboard-check"></i>
+          </div>
+          <h3 class="text-base font-bold text-slate-800">Semua Usulan Sudah Diproses!</h3>
+          <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">Tidak ada usulan pengeluaran dana besar yang tertahan. Seluruh permohonan belanja kelas telah diselesaikan.</p>
+        </div>
+      <% } else { %>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <% pendingExpenses.forEach(exp => { %>
+            <div class="bg-white rounded-2xl border-2 border-amber-300 p-6 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+              <div>
+                <!-- Top Badge & Nominal -->
+                <div class="flex items-start justify-between gap-3">
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                    <i class="fa-solid fa-clock"></i>
+                    <span>MENUNGGU PERSETUJUAN</span>
+                  </span>
+                  <div class="text-right">
+                    <span class="text-[10px] text-slate-400 block uppercase font-bold">Nominal Diajukan:</span>
+                    <span class="text-xl font-black text-rose-600"><%= formatRupiah(exp.nominal) %></span>
+                  </div>
+                </div>
+
+                <!-- Judul & Kategori -->
+                <h3 class="text-base font-extrabold text-slate-900 mt-3"><%= exp.judul %></h3>
+                <div class="flex items-center gap-2 mt-1 text-xs text-slate-500">
+                  <span class="px-2 py-0.5 rounded bg-slate-100 font-semibold text-slate-700 border border-slate-200"><%= exp.kategori %></span>
+                  <span>&bull;</span>
+                  <span><%= formatDate(exp.tglPengeluaran, 'full') %></span>
+                </div>
+
+                <!-- Deskripsi Alasan -->
+                <div class="mt-4 p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700">
+                  <div class="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-1">Rincian &amp; Alasan Kebutuhan:</div>
+                  <p class="leading-relaxed"><%= exp.deskripsi || 'Tidak ada keterangan tambahan.' %></p>
+                  <div class="mt-2 pt-2 border-t border-slate-200 text-[11px] text-slate-500 flex items-center justify-between">
+                    <span>Pemohon: <strong class="text-slate-800"><%= exp.createdBy ? exp.createdBy.nama : 'Bendahara' %></strong></span>
+                    <span>Waktu input: <%= formatDate(exp.createdAt, 'time') %></span>
+                  </div>
+                </div>
+
+                <!-- Lampiran Foto Bukti -->
+                <div class="mt-3">
+                  <% if (exp.fotoNotaUrl) { %>
+                    <button onclick="previewImage('<%= exp.fotoNotaUrl %>', '<%= exp.judul %>')" class="w-full py-2 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-brand-700 border border-blue-200 text-xs font-bold flex items-center justify-center gap-2 transition">
+                      <i class="fa-solid fa-file-invoice"></i>
+                      <span>Lihat Lampiran Foto Nota / Estimasi Belanja</span>
+                    </button>
+                  <% } else { %>
+                    <div class="text-center py-2 text-xs text-slate-400 italic bg-slate-50 rounded-xl border border-slate-200">
+                      Tidak ada foto nota/penawaran terlampir
+                    </div>
+                  <% } %>
+                </div>
+              </div>
+
+              <!-- Action Buttons ACC / Tolak -->
+              <div class="mt-5 pt-4 border-t border-slate-100 grid grid-cols-2 gap-3">
+                <!-- Tolak Form -->
+                <form action="/expenses/reject/<%= exp.id %>" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menolak usulan pengeluaran ini?');">
+                  <button type="submit" class="w-full py-2.5 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs border border-rose-200 transition flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-xmark"></i>
+                    <span>Tolak Usulan</span>
+                  </button>
+                </form>
+
+                <!-- Setujui Form (ACC) -->
+                <form action="/expenses/approve/<%= exp.id %>" method="POST" onsubmit="return confirm('Setujui usulan belanja sebesar <%= formatRupiah(exp.nominal) %>? Saldo kas akan langsung terpotong.');">
+                  <button type="submit" class="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition flex items-center justify-center gap-1.5 active:scale-95">
+                    <i class="fa-solid fa-check"></i>
+                    <span>Setujui (ACC Dana)</span>
+                  </button>
+                </form>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- Section: Riwayat Keputusan Otorisasi Terakhir -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 sm:p-6">
+      <div class="pb-3 border-b border-slate-100 mb-4">
+        <h2 class="text-base font-bold text-slate-900">Riwayat Otorisasi Usulan Terdahulu</h2>
+        <p class="text-xs text-slate-500">Daftar usulan belanja yang sudah disetujui atau ditolak sebelumnya</p>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-50 text-slate-500 border-b border-slate-200 font-bold uppercase tracking-wider">
+              <th class="py-2.5 px-3">Tanggal Otorisasi</th>
+              <th class="py-2.5 px-3">Judul Pengeluaran</th>
+              <th class="py-2.5 px-3">Nominal</th>
+              <th class="py-2.5 px-3">Status</th>
+              <th class="py-2.5 px-3">Diverifikasi Oleh</th>
+              <th class="py-2.5 px-3">Catatan / Alasan</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 font-medium">
+            <% if (approvedHistory.length === 0) { %>
+              <tr>
+                <td colspan="6" class="py-6 text-center text-slate-400 italic">Belum ada riwayat otorisasi usulan.</td>
+              </tr>
+            <% } else { %>
+              <% approvedHistory.forEach(h => { 
+                const badge = getStatusBadge(h.statusApproval);
+              %>
+                <tr class="hover:bg-slate-50/60 transition">
+                  <td class="py-2.5 px-3 font-semibold text-slate-700"><%= formatDate(h.tglApproval, 'time') %></td>
+                  <td class="py-2.5 px-3 font-bold text-slate-900"><%= h.judul %></td>
+                  <td class="py-2.5 px-3 font-black <%= h.statusApproval === 'APPROVED' ? 'text-rose-600' : 'text-slate-500 line-through' %>">
+                    <%= formatRupiah(h.nominal) %>
+                  </td>
+                  <td class="py-2.5 px-3">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border <%= badge.bg %> <%= badge.text %> <%= badge.border %>">
+                      <%= badge.label %>
+                    </span>
+                  </td>
+                  <td class="py-2.5 px-3 text-slate-700"><%= h.approvedBy ? h.approvedBy.nama : '-' %></td>
+                  <td class="py-2.5 px-3 text-slate-500 italic"><%= h.alasanApproval || '-' %></td>
+                </tr>
+              <% }); %>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<%- include('../layouts/footer') %>

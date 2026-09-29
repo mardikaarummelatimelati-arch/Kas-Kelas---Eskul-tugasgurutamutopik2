@@ -1,0 +1,18 @@
+# Set default behavior to automatically handle line endings
+* text=auto
+
+# Syntax files
+*.js text
+*.json text
+*.ejs text
+*.css text
+*.md text
+*.prisma text
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.db binary

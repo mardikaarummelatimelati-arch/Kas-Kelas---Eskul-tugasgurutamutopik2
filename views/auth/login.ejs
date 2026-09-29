@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-slate-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> | SiKas Pintar</title>
+  <link rel="icon" type="image/svg+xml" href="/images/logo.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+            }
+          },
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/css/custom.css">
+</head>
+<body class="h-full flex items-center justify-center p-4 bg-gradient-to-br from-slate-100 via-blue-50/40 to-indigo-50/50">
+
+  <div class="w-full max-w-md">
+    <!-- Header Logo & Title -->
+    <div class="text-center mb-6">
+      <div class="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-600 text-white shadow-xl shadow-brand-500/25 mb-3">
+        <i class="fa-solid fa-coins text-3xl"></i>
+      </div>
+      <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">SiKas <span class="text-brand-600">Pintar</span></h1>
+      <p class="text-xs text-slate-500 font-medium mt-1">Sistem Manajemen Kas Kelas &amp; Ekstrakurikuler Transparan</p>
+      <div class="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-700 shadow-sm">
+        <i class="fa-solid fa-graduation-cap text-brand-600"></i> Kelas XII RPL 1 • TP 2026/2027
+      </div>
+    </div>
+
+    <!-- Login Card -->
+    <div class="bg-white rounded-2xl border border-slate-200/90 shadow-xl p-6 sm:p-8 backdrop-blur">
+      <div class="mb-5">
+        <h2 class="text-lg font-bold text-slate-800">Masuk ke Sistem</h2>
+        <p class="text-xs text-slate-500">Silakan masukkan username dan password Anda</p>
+      </div>
+
+      <!-- Alert Error / Success -->
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
+          <i class="fa-solid fa-circle-exclamation text-rose-500 text-base"></i>
+          <span><%= error %></span>
+        </div>
+      <% } %>
+
+      <% if (typeof success !== 'undefined' && success) { %>
+        <div class="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs flex items-center gap-2">
+          <i class="fa-solid fa-circle-check text-emerald-500 text-base"></i>
+          <span><%= success %></span>
+        </div>
+      <% } %>
+
+      <!-- Form Login -->
+      <form action="/auth/login" method="POST" class="space-y-4">
+        <div>
+          <label for="username" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Username</label>
+          <div class="relative">
+            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+              <i class="fa-solid fa-user text-sm"></i>
+            </div>
+            <input type="text" id="username" name="username" required
+              value="<%= typeof username !== 'undefined' ? username : '' %>"
+              placeholder="admin / bendahara / siswa"
+              class="block w-full rounded-xl border border-slate-300 pl-10 pr-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition">
+          </div>
+        </div>
+
+        <div>
+          <label for="password" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Password</label>
+          <div class="relative">
+            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+              <i class="fa-solid fa-lock text-sm"></i>
+            </div>
+            <input type="password" id="password" name="password" required
+              placeholder="••••••••"
+              class="block w-full rounded-xl border border-slate-300 pl-10 pr-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition">
+          </div>
+        </div>
+
+        <button type="submit" class="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm shadow-lg shadow-brand-500/25 transition active:scale-[0.99]">
+          <span>Masuk Sekarang</span>
+          <i class="fa-solid fa-arrow-right text-xs"></i>
+        </button>
+      </form>
+
+      <!-- Quick Demo Login Switcher Section -->
+      <div class="mt-6 pt-5 border-t border-slate-100">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            <i class="fa-solid fa-bolt text-amber-500 mr-1"></i> Switch Cepat Akun Demo
+          </span>
+          <span class="text-[10px] text-slate-400">1-Klik Langsung Masuk</span>
+        </div>
+
+        <div class="grid grid-cols-1 gap-2">
+          <!-- Demo Admin -->
+          <a href="/auth/quick-login/admin" class="flex items-center justify-between p-2.5 rounded-xl border border-purple-200 bg-purple-50/60 hover:bg-purple-100/80 transition group">
+            <div class="flex items-center gap-2.5">
+              <div class="h-8 w-8 rounded-lg bg-purple-600 text-white flex items-center justify-center text-xs font-bold shadow-sm">
+                <i class="fa-solid fa-user-shield"></i>
+              </div>
+              <div class="text-left">
+                <div class="text-xs font-bold text-purple-950 group-hover:text-purple-700">1. Wali Kelas / Pembina (Admin)</div>
+                <div class="text-[10px] text-purple-700">user: <code class="font-mono bg-white/70 px-1 rounded">admin</code> | pass: <code class="font-mono bg-white/70 px-1 rounded">password123</code></div>
+              </div>
+            </div>
+            <span class="text-xs font-bold text-purple-600 group-hover:translate-x-0.5 transition"><i class="fa-solid fa-chevron-right text-[10px]"></i></span>
+          </a>
+
+          <!-- Demo Bendahara -->
+          <a href="/auth/quick-login/bendahara" class="flex items-center justify-between p-2.5 rounded-xl border border-emerald-200 bg-emerald-50/60 hover:bg-emerald-100/80 transition group">
+            <div class="flex items-center gap-2.5">
+              <div class="h-8 w-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shadow-sm">
+                <i class="fa-solid fa-wallet"></i>
+              </div>
+              <div class="text-left">
+                <div class="text-xs font-bold text-emerald-950 group-hover:text-emerald-700">2. Bendahara Siswa</div>
+                <div class="text-[10px] text-emerald-700">user: <code class="font-mono bg-white/70 px-1 rounded">bendahara</code> | pass: <code class="font-mono bg-white/70 px-1 rounded">password123</code></div>
+              </div>
+            </div>
+            <span class="text-xs font-bold text-emerald-600 group-hover:translate-x-0.5 transition"><i class="fa-solid fa-chevron-right text-[10px]"></i></span>
+          </a>
+
+          <!-- Demo Siswa -->
+          <a href="/auth/quick-login/siswa" class="flex items-center justify-between p-2.5 rounded-xl border border-blue-200 bg-blue-50/60 hover:bg-blue-100/80 transition group">
+            <div class="flex items-center gap-2.5">
+              <div class="h-8 w-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs font-bold shadow-sm">
+                <i class="fa-solid fa-user-graduate"></i>
+              </div>
+              <div class="text-left">
+                <div class="text-xs font-bold text-blue-950 group-hover:text-blue-700">3. Siswa / Anggota Kelas</div>
+                <div class="text-[10px] text-blue-700">user: <code class="font-mono bg-white/70 px-1 rounded">siswa</code> | pass: <code class="font-mono bg-white/70 px-1 rounded">password123</code></div>
+              </div>
+            </div>
+            <span class="text-xs font-bold text-blue-600 group-hover:translate-x-0.5 transition"><i class="fa-solid fa-chevron-right text-[10px]"></i></span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Note -->
+    <div class="mt-6 text-center text-xs text-slate-400">
+      &copy; 2026 SiKas Pintar &bull; Standar UKK / Industri Rekayasa Perangkat Lunak
+    </div>
+  </div>
+
+</body>
+</html>

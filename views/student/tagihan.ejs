@@ -1,0 +1,127 @@
+<%- include('../layouts/header') %>
+<%- include('../layouts/sidebar') %>
+
+<div class="lg:pl-72 flex flex-col flex-1 min-h-screen">
+  <%- include('../layouts/navbar') %>
+
+  <main class="flex-1 p-4 sm:p-6 lg:p-8 space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Status Tagihan &amp; Iuran Kas Saya</h1>
+        <p class="text-xs text-slate-500 mt-1">Cek status pembayaran iuran wajib bulanan dan unduh tanda terima kuitansi digital.</p>
+      </div>
+      <div class="p-3 rounded-xl bg-white border border-slate-200 text-right shadow-sm">
+        <span class="text-[10px] text-slate-400 font-bold uppercase block">Nama Siswa / NISN:</span>
+        <span class="text-xs font-black text-slate-800"><%= user.nama %> (<%= user.nisn || '-' %>)</span>
+      </div>
+    </div>
+
+    <!-- 3 Summary Stat Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Beban Tagihan</span>
+        <div class="text-2xl font-black text-slate-900 mt-2"><%= formatRupiah(stats.totalTagihan) %></div>
+        <div class="text-[10px] text-slate-500 mt-0.5"><%= incomes.length %> Periode tagihan kas</div>
+      </div>
+      <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Total Sudah Dibayar</span>
+        <div class="text-2xl font-black text-emerald-600 mt-2"><%= formatRupiah(stats.totalLunas) %></div>
+        <div class="text-[10px] text-emerald-600 font-semibold mt-0.5"><%= stats.countLunas %> Periode lunas</div>
+      </div>
+      <div class="bg-white rounded-2xl p-5 border <%= stats.totalTunggakan > 0 ? 'border-amber-300 bg-amber-50/20' : 'border-slate-200/80' %> shadow-sm">
+        <span class="text-[10px] font-bold uppercase tracking-wider <%= stats.totalTunggakan > 0 ? 'text-amber-700' : 'text-slate-400' %>">Total Tunggakan Saya</span>
+        <div class="text-2xl font-black <%= stats.totalTunggakan > 0 ? 'text-amber-700' : 'text-slate-900' %> mt-2"><%= formatRupiah(stats.totalTunggakan) %></div>
+        <div class="text-[10px] font-semibold mt-0.5 <%= stats.totalTunggakan > 0 ? 'text-amber-600' : 'text-emerald-600' %>">
+          <%= stats.totalTunggakan > 0 ? `${stats.countBelum} Periode belum diselesaikan` : 'Semua tagihan lunas!' %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table of Bills -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+        <h2 class="text-base font-bold text-slate-900">Daftar Tagihan Kas Siswa</h2>
+        <span class="text-xs text-slate-400">Kelas <%= user.kelas || 'XII RPL 1' %></span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-50 text-slate-500 border-b border-slate-200 font-bold uppercase tracking-wider">
+              <th class="py-3 px-4">Periode Kas</th>
+              <th class="py-3 px-4">Nominal Tagihan</th>
+              <th class="py-3 px-4">Status Pembayaran</th>
+              <th class="py-3 px-4">Tanggal Pembayaran</th>
+              <th class="py-3 px-4">Petugas Bendahara</th>
+              <th class="py-3 px-4 text-center">Bukti / Tanda Terima</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 font-medium">
+            <% if (incomes.length === 0) { %>
+              <tr>
+                <td colspan="6" class="py-8 text-center text-slate-400 italic">Tidak ada tagihan yang ditujukan kepada Anda.</td>
+              </tr>
+            <% } else { %>
+              <% incomes.forEach(inc => { 
+                const badge = getStatusBadge(inc.status);
+              %>
+                <tr class="hover:bg-slate-50/60 transition">
+                  <td class="py-3.5 px-4">
+                    <div class="font-bold text-slate-900 text-sm"><%= inc.period ? inc.period.namaPeriode : '-' %></div>
+                    <div class="text-[10px] text-slate-400 font-sans"><%= inc.period ? inc.period.bulan + ' ' + inc.period.tahun : '' %></div>
+                  </td>
+                  <td class="py-3.5 px-4 font-black text-slate-900 text-sm">
+                    <%= formatRupiah(inc.nominal) %>
+                  </td>
+                  <td class="py-3.5 px-4">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border <%= badge.bg %> <%= badge.text %> <%= badge.border %>">
+                      <i class="fa-solid <%= inc.status === 'LUNAS' ? 'fa-circle-check' : 'fa-clock' %> text-[10px]"></i>
+                      <span><%= badge.label %></span>
+                    </span>
+                  </td>
+                  <td class="py-3.5 px-4">
+                    <% if (inc.status === 'LUNAS') { %>
+                      <div class="font-bold text-slate-800"><%= formatDate(inc.tglBayar, 'full') %></div>
+                      <span class="text-[10px] font-semibold text-slate-500">Metode: <%= inc.metodeBayar || 'TUNAI' %></span>
+                    <% } else { %>
+                      <span class="text-amber-600 font-semibold italic">Belum dibayar</span>
+                    <% } %>
+                  </td>
+                  <td class="py-3.5 px-4 text-slate-700">
+                    <%= inc.bendahara ? inc.bendahara.nama : '-' %>
+                  </td>
+                  <td class="py-3.5 px-4 text-center">
+                    <% if (inc.status === 'LUNAS') { %>
+                      <a href="/incomes/receipt/<%= inc.id %>" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200 font-bold text-xs transition">
+                        <i class="fa-solid fa-receipt text-brand-600"></i>
+                        <span>Cetak Kuitansi Digital</span>
+                      </a>
+                    <% } else { %>
+                      <span class="text-slate-400 italic text-[11px]">Kuitansi belum tersedia</span>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }); %>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Petunjuk Pembayaran -->
+    <div class="p-5 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 flex items-start gap-4">
+      <div class="h-10 w-10 rounded-xl bg-brand-600 text-white flex items-center justify-center shrink-0 text-lg shadow-sm">
+        <i class="fa-solid fa-circle-info"></i>
+      </div>
+      <div class="text-xs text-slate-700">
+        <h3 class="font-extrabold text-slate-900 text-sm">Informasi Pelunasan Iuran Kas Kelas</h3>
+        <p class="mt-1 leading-relaxed">
+          Pembayaran iuran dapat dilakukan secara <strong>Tunai (Cash)</strong> langsung kepada Bendahara Kelas atau secara <strong>Transfer QRIS</strong> kelas. Setelah uang diserahkan, mintalah bendahara untuk melakukan verifikasi di sistem ini agar kuitansi digital Anda otomatis terbit.
+        </p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<%- include('../layouts/footer') %>

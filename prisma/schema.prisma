@@ -1,0 +1,87 @@
+// Prisma schema for Sistem Manajemen Kas Kelas & Ekstrakurikuler
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               Int       @id @default(autoincrement())
+  username         String    @unique
+  password         String
+  nama             String
+  role             String    // "ADMIN" | "BENDAHARA" | "SISWA"
+  nisn             String?   @unique
+  kelas            String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relasi
+  incomes          Income[]  @relation("StudentIncomes")
+  recordedIncomes  Income[]  @relation("BendaharaIncomes")
+  createdExpenses  Expense[] @relation("CreatedExpenses")
+  approvedExpenses Expense[] @relation("ApprovedExpenses")
+}
+
+model KasPeriod {
+  id           Int      @id @default(autoincrement())
+  namaPeriode  String
+  nominalWajib Float
+  bulan        String
+  tahun        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relasi
+  incomes      Income[]
+}
+
+model Income {
+  id           Int        @id @default(autoincrement())
+  periodId     Int
+  period       KasPeriod  @relation(fields: [periodId], references: [id], onDelete: Cascade)
+  studentId    Int
+  student      User       @relation("StudentIncomes", fields: [studentId], references: [id], onDelete: Cascade)
+  nominal      Float
+  tglBayar     DateTime?
+  status       String     @default("BELUM") // "LUNAS" | "BELUM"
+  bendaharaId  Int?
+  bendahara    User?      @relation("BendaharaIncomes", fields: [bendaharaId], references: [id])
+  metodeBayar  String?    @default("TUNAI") // "TUNAI" | "TRANSFER"
+  catatan      String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model Expense {
+  id              Int       @id @default(autoincrement())
+  judul           String
+  nominal         Float
+  kategori        String    // e.g. "Peralatan", "Kebersihan", "Acara/Lomba", "Konsumsi", "Fotokopi", "Lain-lain"
+  tglPengeluaran  DateTime  @default(now())
+  fotoNotaUrl     String?
+  deskripsi       String?
+  statusApproval  String    @default("PENDING") // "APPROVED" | "PENDING" | "REJECTED"
+  createdById     Int?
+  createdBy       User?     @relation("CreatedExpenses", fields: [createdById], references: [id])
+  approvedById    Int?
+  approvedBy      User?     @relation("ApprovedExpenses", fields: [approvedById], references: [id])
+  tglApproval     DateTime?
+  alasanApproval  String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model KasLog {
+  id            Int      @id @default(autoincrement())
+  saldoSebelum  Float
+  saldoSesudah  Float
+  jenisMutasi   String   // "MASUK" | "KELUAR"
+  nominal       Float    @default(0)
+  keterangan    String
+  createdAt     DateTime @default(now())
+}

@@ -1,0 +1,214 @@
+<%- include('../layouts/header') %>
+<%- include('../layouts/sidebar') %>
+
+<div class="lg:pl-72 flex flex-col flex-1 min-h-screen">
+  <%- include('../layouts/navbar') %>
+
+  <main class="flex-1 p-4 sm:p-6 lg:p-8 space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Setting Periode Tagihan Kas</h1>
+        <p class="text-xs text-slate-500 mt-1">Atur target nominal penagihan iuran bulanan atau mingguan untuk seluruh anggota kelas.</p>
+      </div>
+      <button onclick="openModal('addPeriodModal')" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-lg shadow-brand-500/20 transition active:scale-95">
+        <i class="fa-solid fa-calendar-plus"></i>
+        <span>Buat Periode Tagihan Baru</span>
+      </button>
+    </div>
+
+    <!-- Alerts -->
+    <% if (typeof success !== 'undefined' && success) { %>
+      <div class="auto-dismiss-alert p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-circle-check text-emerald-600 text-sm"></i>
+          <span><%= success %></span>
+        </div>
+        <button onclick="this.parentElement.remove()" class="text-emerald-500 hover:text-emerald-700"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+    <% } %>
+
+    <% if (typeof error !== 'undefined' && error) { %>
+      <div class="auto-dismiss-alert p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-triangle-exclamation text-rose-600 text-sm"></i>
+          <span><%= error %></span>
+        </div>
+        <button onclick="this.parentElement.remove()" class="text-rose-500 hover:text-rose-700"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+    <% } %>
+
+    <!-- Period Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <% if (periods.length === 0) { %>
+        <div class="col-span-full bg-white rounded-2xl p-10 text-center border border-slate-200/80 shadow-sm">
+          <div class="h-12 w-12 rounded-full bg-slate-100 text-slate-400 mx-auto flex items-center justify-center text-xl mb-3">
+            <i class="fa-regular fa-calendar-xmark"></i>
+          </div>
+          <h3 class="text-sm font-bold text-slate-800">Belum Ada Periode Tagihan</h3>
+          <p class="text-xs text-slate-500 mt-1">Klik tombol "Buat Periode Tagihan Baru" untuk memulai siklus iuran kelas.</p>
+        </div>
+      <% } else { %>
+        <% periods.forEach(p => { %>
+          <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover-lift flex flex-col justify-between">
+            <div>
+              <div class="flex items-start justify-between gap-3">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-brand-50 text-brand-700 border border-brand-200">
+                  <i class="fa-solid fa-calendar text-[10px]"></i>
+                  <span><%= p.bulan %> <%= p.tahun %></span>
+                </span>
+                
+                <div class="flex items-center gap-1">
+                  <button onclick="openEditPeriodModal('<%= p.id %>', '<%= p.namaPeriode %>', '<%= p.nominalWajib %>', '<%= p.bulan %>', '<%= p.tahun %>')" class="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg" title="Edit Periode">
+                    <i class="fa-solid fa-pen-to-square text-xs"></i>
+                  </button>
+                  <form action="/periods/delete/<%= p.id %>" method="POST" onsubmit="return confirm('Hapus periode ini dan seluruh riwayat tagihannya?');" class="inline">
+                    <button type="submit" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg" title="Hapus Periode">
+                      <i class="fa-solid fa-trash-can text-xs"></i>
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+              <h2 class="text-base font-extrabold text-slate-900 mt-3"><%= p.namaPeriode %></h2>
+              <div class="text-xs text-slate-500 mt-0.5">Iuran Wajib: <span class="font-bold text-emerald-600"><%= formatRupiah(p.nominalWajib) %></span> / siswa</div>
+
+              <!-- Progress bar -->
+              <div class="mt-4 pt-4 border-t border-slate-100">
+                <div class="flex items-center justify-between text-xs mb-1.5">
+                  <span class="font-bold text-slate-700">Tingkat Pelunasan</span>
+                  <span class="font-extrabold text-slate-900"><%= p.persentase %>%</span>
+                </div>
+                <div class="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-emerald-500 rounded-full transition-all duration-500" style="width: <%= p.persentase %>%;"></div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 mt-3 text-center text-xs">
+                  <div class="p-2 rounded-xl bg-emerald-50/70 border border-emerald-100">
+                    <div class="text-[10px] text-emerald-700 font-bold uppercase">Sudah Lunas</div>
+                    <div class="text-sm font-black text-emerald-800"><%= p.totalLunas %> Siswa</div>
+                  </div>
+                  <div class="p-2 rounded-xl bg-amber-50/70 border border-amber-100">
+                    <div class="text-[10px] text-amber-700 font-bold uppercase">Menunggak</div>
+                    <div class="text-sm font-black text-amber-800"><%= p.totalBelum %> Siswa</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+              <div>
+                <span class="text-[10px] text-slate-400 block">Dana Terkumpul:</span>
+                <span class="text-xs font-black text-slate-800"><%= formatRupiah(p.terkumpul) %></span>
+              </div>
+              <a href="/incomes?periodId=<%= p.id %>" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition">
+                <span>Catat Iuran</span>
+                <i class="fa-solid fa-arrow-right text-[10px]"></i>
+              </a>
+            </div>
+          </div>
+        <% }); %>
+      <% } %>
+    </div>
+  </main>
+</div>
+
+<!-- Modal Tambah Periode -->
+<div id="addPeriodModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+      <h3 class="text-base font-bold text-slate-900">Buat Periode Tagihan Baru</h3>
+      <button onclick="closeModal('addPeriodModal')" class="text-slate-400 hover:text-slate-600 p-1"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form action="/periods/create" method="POST" class="space-y-4 mt-4 text-xs">
+      <div>
+        <label class="block font-bold text-slate-700 uppercase mb-1">Nama Periode</label>
+        <input type="text" name="namaPeriode" required placeholder="Contoh: Kas Wajib Oktober 2026" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-brand-500">
+      </div>
+      <div>
+        <label class="block font-bold text-slate-700 uppercase mb-1">Nominal Iuran Wajib per Siswa (Rp)</label>
+        <input type="number" name="nominalWajib" required value="20000" min="1000" step="1000" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-brand-500">
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Bulan</label>
+          <select name="bulan" required class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-brand-500 bg-white">
+            <option value="Januari">Januari</option>
+            <option value="Februari">Februari</option>
+            <option value="Maret">Maret</option>
+            <option value="April">April</option>
+            <option value="Mei">Mei</option>
+            <option value="Juni">Juni</option>
+            <option value="Juli">Juli</option>
+            <option value="Agustus">Agustus</option>
+            <option value="September" selected>September</option>
+            <option value="Oktober">Oktober</option>
+            <option value="November">November</option>
+            <option value="Desember">Desember</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Tahun</label>
+          <input type="number" name="tahun" value="2026" required class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-brand-500">
+        </div>
+      </div>
+      <div class="p-3 rounded-xl bg-blue-50 border border-blue-200">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" name="generateTagihan" value="true" checked class="rounded text-brand-600 focus:ring-brand-500 h-4 w-4">
+          <span class="text-slate-800 font-semibold text-[11px]">Otomatis buatkan tagihan "Menunggak" untuk seluruh siswa aktif</span>
+        </label>
+      </div>
+      <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+        <button type="button" onclick="closeModal('addPeriodModal')" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold hover:bg-slate-200">Batal</button>
+        <button type="submit" class="px-4 py-2 rounded-xl bg-brand-600 text-white font-bold hover:bg-brand-700 shadow-md shadow-brand-500/20">Buat Periode</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Edit Periode -->
+<div id="editPeriodModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+      <h3 class="text-base font-bold text-slate-900">Perbarui Periode Tagihan</h3>
+      <button onclick="closeModal('editPeriodModal')" class="text-slate-400 hover:text-slate-600 p-1"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form id="editPeriodForm" method="POST" class="space-y-4 mt-4 text-xs">
+      <div>
+        <label class="block font-bold text-slate-700 uppercase mb-1">Nama Periode</label>
+        <input type="text" id="editNamaPeriode" name="namaPeriode" required class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-brand-500">
+      </div>
+      <div>
+        <label class="block font-bold text-slate-700 uppercase mb-1">Nominal Iuran Wajib (Rp)</label>
+        <input type="number" id="editNominalWajib" name="nominalWajib" required class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-brand-500">
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Bulan</label>
+          <input type="text" id="editBulan" name="bulan" required class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-brand-500">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Tahun</label>
+          <input type="number" id="editTahun" name="tahun" required class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-brand-500">
+        </div>
+      </div>
+      <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+        <button type="button" onclick="closeModal('editPeriodModal')" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold hover:bg-slate-200">Batal</button>
+        <button type="submit" class="px-4 py-2 rounded-xl bg-brand-600 text-white font-bold hover:bg-brand-700 shadow-md shadow-brand-500/20">Simpan Perubahan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openEditPeriodModal(id, nama, nominal, bulan, tahun) {
+    document.getElementById('editPeriodForm').action = '/periods/update/' + id;
+    document.getElementById('editNamaPeriode').value = nama;
+    document.getElementById('editNominalWajib').value = nominal;
+    document.getElementById('editBulan').value = bulan;
+    document.getElementById('editTahun').value = tahun;
+    openModal('editPeriodModal');
+  }
+</script>
+
+<%- include('../layouts/footer') %>

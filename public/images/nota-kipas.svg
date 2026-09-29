@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="480" viewBox="0 0 400 480" style="background:#fff; font-family: monospace, sans-serif;">
+  <rect width="400" height="480" fill="#fafafa" stroke="#e2e8f0" stroke-width="2"/>
+  <text x="200" y="45" font-size="18" font-weight="bold" text-anchor="middle" fill="#1e293b">ELEKTRONIK JAYA ABADI</text>
+  <text x="200" y="65" font-size="11" text-anchor="middle" fill="#64748b">Pusat Elektronik &amp; Kebutuhan Rumah Tangga</text>
+  <line x1="20" y1="85" x2="380" y2="85" stroke="#94a3b8" stroke-dasharray="4"/>
+  <text x="25" y="110" font-size="12" fill="#334155">Estimasi/Proforma: EST-2026/09/24-019</text>
+  <text x="25" y="130" font-size="12" fill="#334155">Tgl: 24 September 2026 10:50</text>
+  <text x="25" y="150" font-size="12" fill="#334155">Pemesan: Kelas XII RPL 1</text>
+  <line x1="20" y1="165" x2="380" y2="165" stroke="#cbd5e1"/>
+  
+  <text x="25" y="195" font-size="12" font-weight="bold" fill="#0f172a">Kipas Angin Dinding Cosmos 16"</text>
+  <text x="375" y="195" font-size="12" text-anchor="end" fill="#0f172a">Rp 250.000</text>
+  
+  <text x="25" y="225" font-size="12" font-weight="bold" fill="#0f172a">Kabel Roll Uticon 5m + Steker</text>
+  <text x="375" y="225" font-size="12" text-anchor="end" fill="#0f172a">Rp 35.000</text>
+
+  <line x1="20" y1="255" x2="380" y2="255" stroke="#cbd5e1"/>
+  <text x="25" y="285" font-size="14" font-weight="bold" fill="#0f172a">TOTAL ESTIMASI</text>
+  <text x="375" y="285" font-size="15" font-weight="bold" text-anchor="end" fill="#d97706">Rp 285.000</text>
+
+  <!-- Watermark / Status -->
+  <g transform="translate(110, 330) rotate(-5)">
+    <rect width="180" height="50" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+    <text x="90" y="32" font-size="15" font-weight="bold" text-anchor="middle" fill="#b45309">MENUNGGU ACC</text>
+  </g>
+</svg>
